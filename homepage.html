@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人主页</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .top-header{
+            margin-left: 200px;
+        }
+        /*#black-note{*/
+        /*    display: none;*/
+        /*}*/
+        /*#note{*/
+        /*    display: block;*/
+        /*}*/
+        .sort-title{
+            color: black;
+            font-size: 16px;
+            margin-top: 80px;
+            text-align: center;
+        }
+        .sort-info{
+            margin-top: 5px;
+            font-size: 14px;
+            color: #777777;
+        }
+
+        .bor{
+            border: 1px red solid;
+            /*text-align: center;*/
+        }
+        .blank{
+            font-size: 50px;
+            color: #777;
+            text-align: center;
+            margin-top: 180px;
+        }
+        .sort-button{
+            width:80px;
+            height: 25px;
+            background-color: white;
+            border: 2px dashed #777777;
+            border-radius:12px;
+            margin-left: 25px;
+            margin-top: 2px;
+        }
+        .sort-bor{
+            border-top: 1px solid #eee;
+            border-right: 1px solid #eee;
+            height: 300px;
+        }
+        #add-sort-page{
+            display: none;
+            position: fixed;
+            z-index: 5;
+            width: 400px;
+            height: 200px;
+            border: 1px solid #aaaaaa;
+            border-radius:12px;
+            background-color: white;
+            top: 200px;
+            left: 450px;
+            box-shadow: 2px 2px 2px #eeeeee;
+        }
+        #sort-ol{
+            margin-top: 5px;
+            list-style: none;
+        }
+        .sort-li{
+            margin-top: 3px;
+        }
+        #X:hover{
+            cursor:pointer;
+        }
+    </style>
+</head>
+
+<body>
+<div class="page-header">
+    <div class="top-header">
+        <h1>
+            <span  id="name">ZYX</span>
+            <small>的笔记</small>
+        </h1>
+    </div>
+</div>
+<div id="black-note">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-2" id="info">
+                <div class="sort-title">分类</div>
+                <div class="sort-info sort-bor " id="one">
+                    <ol id="sort-ol">
+                    </ol>
+                    <button id="add-sort" class="sort-button">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+                </div>
+            </div>
+            <div class="col-sm-9 ">
+                <div class="row ">
+                    <button id="edit" type="button" class="btn btn-default" style="float: right">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                    </button>
+                </div>
+                <div class="row blank">
+                    空
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="add-sort-page">
+    <div >
+        <div style="float: left;width:360px;height: 20px">
+            <h5 style="margin-left: 170px">添加分类</h5>
+        </div>
+        <div style="float: left;margin-top: 10px;margin-left: 10px" id="X">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        </div>
+    </div>
+    <div style="margin-left: 50px;margin-top: 40px;width: 300px;padding-top: 10px">
+        <div id="sort_name_error">名称:  </div>
+        <input style="margin-top: 10px" id="sort_name" type="text" class="form-control" placeholder="名称">
+    </div>
+    <button id="add-sort-ajax" style="margin-top: 30px;margin-left: 125px;width: 150px;height: 30px" type="button" class="btn btn-default">添加</button>
+</div>
+<script>
+    $(document).ready(function(){
+        $("#add-sort").click(function(){
+            $("#add-sort-page").toggle();
+        });
+        $("#sort_name").bind("input propertychange", function() {
+            $("#sort_name_error").text("名称:");
+            $("#sort_name_error").css("color","black");
+        });
+        $("#add-sort-ajax").click(function(){
+            var sort_name = $('#sort_name').val();
+            if (sort_name.length > 20){
+                $("#sort_name_error").text("名称:长度大于20");
+                $("#sort_name_error").css("color","red");
+            }
+            $.ajax({
+                url: "http://www.note.com/api/sorts",      //请求接口的地址
+                type: "POST",
+                data:JSON.stringify({
+                    'sort_name': sort_name
+                }),
+                contentType:"application/json",
+                withCredentials: true,
+                crossDomain: true,
+                success: function (response, status, xhr) {                      //请求成功后的操作
+                    if (xhr.status == 201) {
+                        window.location.href="http://www.note.com/homepage.html";
+                    }
+                },
+                error: function (res) {                       //请求失败后的操作
+                    alert("失败");
+                    window.location.href="http://www.note.com/homepage.html";
+                }
+            });
+        });
+        $("#X").click(function(){
+            $("#add-sort-page").toggle();
+        });
+        $("#edit").click(function(){
+            window.open("http://www.note.com/homepage.html")
+        });
+    });
+    // 获取分类列表
+    $.ajax({
+        url: "http://www.note.com/api/sorts",      //请求接口的地址
+        type: "GET",
+        withCredentials: true,
+        crossDomain: true,
+        success: function (response, status, xhr) {                      //请求成功后的操作
+            if (xhr.status == 200) {
+                SortList = JSON.parse(xhr.responseText);
+                console.log(SortList);
+                var html = "";
+                for(var i=0;i<SortList.length;i++){
+                    html += "<li class='sort-li'>"+ SortList[i].sort_name +"</li>"
+                }
+                $("#sort-ol").html(html)
+            }
+        },
+    });
+
+</script>
+</body>
+</html>

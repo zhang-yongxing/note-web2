@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>zyx的笔记</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+        loginStatus = false;
+        var url = location.search; //获取url中"?"符后的字串
+        //判断是否登录
+        if (url.indexOf("?") != -1) {    //判断是否有参数
+            var str = url.substr(1);
+            strs = str.split("=");
+            if (strs[0] == "login" && strs[1] == "true"){
+                $.ajax({
+                    url: "http://www.note.com/api/user",      //请求接口的地址
+                    type: "GET",
+                    withCredentials: true,
+                    crossDomain: true,
+                    success: function (response, status, xhr) {                      //请求成功后的操作
+                        if (xhr.status == 200) {
+                            loginStatus = true;
+                            $("#one").toggle();
+                            $("#two").toggle();
+                            $("#three").toggle();
+                        }
+                    },
+                });
+            }
+        }
+
+        //获取笔记列表
+        $.ajax({
+            url: "http://www.note.com/api/notes",      //请求接口的地址
+            type: "GET",
+            withCredentials: true,
+            crossDomain: true,
+            success: function (response, status, xhr) {                      //请求成功后的操作
+                if (xhr.status == 200) {
+                    var obj = JSON.parse(xhr.responseText);
+                    console.log(obj);
+                    console.log(obj.length === 0);
+                    if (obj.length === 0){
+                        $("#black-note").toggle();
+                        $("#note").toggle();
+                    }
+                }
+            },
+        });
+
+        $(document).ready(function(){
+            // 主页
+            $("#one").hover(function(){
+                $("#one").css("color","black");
+                $("#one").css("cursor","pointer");
+            },function(){
+                $("#one").css("color","#777");
+            });
+            $("#one").click(function(){
+                // window.location.href ="http://www.note.com/login.html";
+                window.open("http://www.note.com/homepage.html");
+            });
+            //登录
+            $("#two").hover(function(){
+                $("#two").css("color","black");
+                $("#two").css("cursor","pointer");
+            },function(){
+                $("#two").css("color","#777");
+            });
+            $("#two").click(function(){
+                window.location.href ="http://www.note.com/login.html";
+            });
+            // 退出
+            $("#three").hover(function(){
+                $("#three").css("color","black");
+                $("#three").css("cursor","pointer");
+            },function(){
+                $("#three").css("color","#777");
+            });
+            $("#three").click(function(){
+                $.ajax({
+                    url: "http://www.note.com/api/logout",      //请求接口的地址
+                    type: "POST",
+                    withCredentials: true,
+                    crossDomain: true,
+                    success: function (response, status, xhr) {                      //请求成功后的操作
+                        if (xhr.status == 204) {
+                            window.location.href ="http://www.note.com/home.html";
+                        }},
+                    error: function () {                       //请求失败后的操作
+                        window.location.href ="http://www.note.com/home.html";
+                    }
+                })
+            });
+        });
+
+    </script>
+    <style>
+        .top-header{
+            margin-left: 200px;
+        }
+        .top-2-font{
+            color: #777;
+        }
+        .top-2-style{
+            margin-top: 45px;
+        }
+        #one{
+            display: none;
+        }
+        #two{
+            display: block;
+        }
+        #three{
+            display: none;
+        }
+        #black-note{
+            display: none;
+            font-size: 50px;
+            color: #777;
+            margin-top: 200px;
+            text-align: center;
+        }
+        #note{
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+<div class="page-header">
+    <div class="top-header">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-sm-10">
+                    <h1>ZYX<small>的笔记</small></h1>
+                </div>
+                <div class="col-sm-2 top-2-style">
+                    <span id="one" class="top-2-font">主页</span>
+                    <span id="two" class="top-2-font">登录</span>
+                    <span id="three" class="top-2-font">退出</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="black-note">
+    空
+</div>
+<div id="note">
+
+</div>
+</body>
+</html>

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="jquery.cookie.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .login{
+            margin-top: 50px;
+        }
+        .login-icon{
+            font-weight: 700;
+            font-size: 80px;
+            font-family: monospace;
+            text-align: center;
+        }
+        .login-row{
+            margin-top: 100px;
+        }
+        .login-username{
+            width: 100%;
+            height: 35px;
+            margin-top: 40px;
+        }
+        .login-username-text{
+            width: 68%;
+            border: 2px solid black;
+            border-top-style: none;
+            border-left-style: none;
+            border-right-style: none;
+        }
+        .login-button{
+            width: 68%;
+            border: 2px solid black;
+            height: 30px;
+            background-color: white;
+            color: black;
+            margin-top: 10px;
+        }
+
+    </style>
+    <script>
+
+        var last_um = "";
+        var last_pw = "";
+
+        // 登录按钮点击
+        $(document).ready(function(){
+            $("button").click(function(){
+                var username = $('#username').val();
+                var pw = $("#pw").val();
+                last_um = username;
+                last_pw = pw;
+                req_status = true;
+                if (username == ""){
+                    $("#username").css("border-color", "red");
+                    $("#username").siblings("div").text("用户名：不能为空");
+                    $("#username").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (username.length > 20){
+                    $("#username").css("border-color", "red");
+                    $("#username").siblings("div").text("用户名：长度超过20");
+                    $("#username").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+
+                if (pw == ""){
+                    $("#pw").css("border-color", "red");
+                    $("#pw").siblings("div").text("密码：不能为空");
+                    $("#pw").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (req_status == true) {
+                    $.ajax({
+                        url: "http://www.note.com/api/login",      //请求接口的地址
+                        type: "POST",                                   //请求的方法GET/POST
+                        data: JSON.stringify({
+                            'user_name': username,
+                            'password': pw
+                        }),
+                        contentType: "application/json",
+                        crossDomain: true,
+                        xhrFields: {withCredentials: true},
+                        success: function (response, status, xhr) {                      //请求成功后的操作
+                            if (xhr.status == 204) {
+                                window.location.href = "http://www.note.com/home.html?login=true";
+                            }
+                        },
+                        error: function (res) {                       //请求失败后的操作
+                            if (res.status == 422) {
+                                var obj = JSON.parse(res.responseText);
+                                if (obj.error == "user_name or password error") {
+                                    $("#username").css("border-color", "red");
+                                    $("#username").siblings("div").text("用户名：用户名或密码错误");
+                                    $("#username").siblings("div").css("color", "red");
+                                    $("#pw").css("border-color", "red");
+                                    $("#pw").siblings("div").text("密码：用户名或密码错误");
+                                    $("#pw").siblings("div").css("color", "red");
+                                }
+                            }else if (res.status == 500) {
+                                    alert("服务器内部错误")
+                            }
+
+                        }
+                    })
+                }
+
+            });
+        });
+
+
+        // 用户名失去焦点
+        $(document).ready(function(){
+            $("#username").blur(function(){
+                $("#username").css("border-color", "black");
+                $("#username").siblings("div").text("用户名：");
+                $("#username").siblings("div").css("color", "black");
+            });
+        });
+        // 密码失去焦点
+        $(document).ready(function(){
+            $("#pw").blur(function(){
+                $("#pw").css("border-color", "black");
+                $("#pw").siblings("div").text("密码：");
+                $("#pw").siblings("div").css("color", "black");
+            });
+        });
+
+
+    </script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3 login">
+                <div class="row">
+                    <div class="login-icon">
+                        Note
+                    </div></div>
+
+                <div class="row login-row">
+                    <div class="col-lg-8 col-lg-offset-2 login-username">
+                        <div>用户名：</div>
+                        <input type="text" id="username" name="username" class="login-username-text" >
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 login-username">
+                        <div>密码：</div>
+                        <input type="password" id="pw" class="login-username-text" >
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 login-username">
+                        <button class="login-button">登录</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>
