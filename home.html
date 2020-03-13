@@ -33,10 +33,66 @@
             }
         }
         GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', 1, 10);
+        GetSorts('9024ef397ed94d75ba3bff7b8b30b0dd');
         //获取首页笔记列表方法
-        function GetNotes(user_id, page_num, page_size){
-            url = 'http://www.note.com/api/default/notes?user_id='+user_id+
-                '&page_num='+page_num+'&page_size='+ page_size;
+        function GetNotes(user_id, page_num, page_size, sort_id=''){
+            if (sort_id==''){
+                url = 'http://www.note.com/api/default/notes?user_id='+user_id+
+                    '&page_num='+page_num+'&page_size='+ page_size;
+            }else{
+                url = 'http://www.note.com/api/default/notes?user_id='+user_id+
+                    '&page_num='+page_num+'&page_size='+ page_size+'&sort_id='+sort_id;
+            }
+
+            $.ajax({
+                url: url,      //请求接口的地址
+                type: "GET",
+                withCredentials: true,
+                crossDomain: true,
+                success: function (response, status, xhr) {                      //请求成功后的操作
+                    if (xhr.status == 200) {
+                        var obj = JSON.parse(xhr.responseText);
+                        var notes = obj.notes;
+                        var page_count = Math.ceil(obj.note_count / page_size);
+                        $('#sort-total').text('全部(' + String(obj.note_count) + ')');
+                        console.log(obj);
+                        if (notes.length === 0){
+                            $("#black-note").show();
+                            $("#not-black-note").hide();
+                        }else {
+                            $("#black-note").hide();
+                            $("#not-black-note").show();
+                            note_html = '';
+                            for(var i=0; i<notes.length; i++){
+                                note_html += '<li class="note-li">';
+                                note_html += '<div style="margin-left: 15px">';
+                                note_html += '<div class="note-title" data-note-id="'+notes[i].note_id+'"><h4>'+notes[i].note_name+'</h4></div>';
+                                note_html += '<div class="note-sort-info">'+ timestampToTime(notes[i].create_time);
+                                note_html += '  |  '+ notes[i].sort_name +'</div>';
+                                note_html += '<div class="note-des">'+ notes[i].note_des +'</div>';
+                                note_html += '</div>';
+                                note_html += '</li>';
+                            }
+                            $('#note-ol').html(note_html);
+                            page_html = '<ul class="pagination" id="page-click">';
+                            for (var p=0; p<page_count; p++){
+                                if (p!=(page_num-1)){
+                                    page_html += '<li data-id="2"><a href="#">' + String(p+1) + '</a></li>';
+                                }else {
+                                    page_html += '<li class="active"><a href="#">' + String(p+1) + '</a></li>';
+                                }
+
+                            }
+                            page_html += '</ul>';
+                            $('#page').html(page_html);
+                        }
+                    }
+                },
+            });
+        }
+
+        function GetSorts(user_id) {
+            url = 'http://www.note.com/api/default/sorts?user_id='+user_id;
             $.ajax({
                 url: url,      //请求接口的地址
                 type: "GET",
@@ -46,26 +102,21 @@
                     if (xhr.status == 200) {
                         var obj = JSON.parse(xhr.responseText);
                         console.log(obj);
-                        console.log(obj.length === 0);
-                        if (obj.length === 0){
-                            $("#black-note").toggle();
-                            $("#note").toggle();
-                        }else {
-                            note_html = '';
-                            for(var i=0; i<obj.length; i++){
-                                note_html += '<ol id="note-ol">';
-                                note_html += '<li class="bor note-li">';
-                                note_html += '<div><h4>'+obj[i].note_name+'</h4></div>';
-                                note_html += '<div style="color: #777777">'+obj[i].sort_name+'</div>';
-                                note_html += '</li>';
-                                note_html += '</ol>';
-                            }
-                            $('#note-ol').html(note_html);
+                        sort_html = '';
+                        for (var s=0; s<obj.length;s++){
+                            sort_html += '<li class="sort-li" data-sort-id="'+ obj[s].sort_id+'">' + obj[s].sort_name +
+                                '(' + String(obj[s].sort_count) + ')' +
+                                '</li>'
+                            ;
+                        }
+                        $('#sort-ol').html(sort_html)
                         }
                     }
-                },
-            });
+                });
         }
+
+
+
         function padding0(num, length) {
             //这里用slice和substr均可
             return (Array(length).join("0") + num).slice(-length);
@@ -124,6 +175,27 @@
                     }
                 })
             });
+
+            $("#page").on('click', 'li', function () {
+                num = $(this).text();
+                GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', num, 10);
+            });
+            $("#note-ol").on('click', '.note-title', function () {
+                window.open("http://www.note.com/note.html?note_id="+$(this).attr('data-note-id'));
+            });
+
+            $("#sort-ol").on('click', '.sort-li',function () {
+                li_sort_id = $(this).attr('data-sort-id');
+                GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', 1, 10, li_sort_id);
+                $(this).css('color','#563d7c');
+                $(this).siblings().css('color','#777');
+                $('#sort-total').css('color','#777');
+            });
+            $('#sort-total').click(function () {
+                GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', 1, 10);
+                $(this).css('color','#563d7c');
+                $('.sort-li').css('color','#777');
+            })
         });
 
     </script>
@@ -153,9 +225,7 @@
             margin-top: 200px;
             text-align: center;
         }
-        #note{
-            display: block;
-        }
+
         #note-ol{
             list-style: none;
         }
@@ -163,7 +233,62 @@
             border: 1px red solid;
         }
         .note-li{
-            height: 200px;
+            /*margin-left: -94px;*/
+            height: 110px;
+            border-bottom-color: #eeeeee;
+            border-bottom-style: solid;
+            border-width: 1px;
+        }
+        .note-sort-info{
+            color: #777777;
+            font-size: 13px;
+        }
+        .note-des{
+            margin-top: 10px;
+            color: #777777;
+            font-size: 13px;
+        }
+        .note-title:hover{
+            cursor: pointer;
+        }
+        #page{
+            margin-left: 50px;
+        }
+        #sort-ol{
+            list-style: none;
+        }
+        .sort-bor{
+            border-left-style: solid;
+            border-left-color: #eeeeee;
+            border-left-width: 1px;
+        }
+        .sort-type{
+            font-size: 14px;
+            font-weight: 400;
+            padding-left: 50px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #eeeeee;
+        }
+        .sort-total{
+            margin-top: 5px;
+            font-size: 13px;
+            padding-left: 40px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            color: #563d7c;
+        }
+        .sort-total:hover{
+            cursor: pointer;
+            color: black;
+        }
+        .sort-li{
+            font-size: 13px;
+            padding-bottom: 5px;
+            color: #777;
+        }
+        .sort-li:hover{
+            cursor: pointer;
+            color: black;
         }
     </style>
 </head>
@@ -185,19 +310,25 @@
         </div>
     </div>
 </div>
-<div id="black-note">
-    空
-</div>
+
 <div id="note">
     <div class="container">
         <div class="row">
-            <div class="col-sm-8 col-sm-offset-1 bor">
-                <ol id="note-ol">
-
-                </ol>
+            <div class="col-sm-7 col-sm-offset-2 ">
+                <div id="not-black-note">
+                    <ol id="note-ol" class="">
+                    </ol>
+                    <div id="page" class=""></div>
+                </div>
+                <div id="black-note">
+                    空
+                </div>
             </div>
-            <div class="col-sm-2 bor">
-
+            <div class="col-sm-2 sort-bor">
+                <div class="sort-type">分类</div>
+                <div id="sort-total" class="sort-total">全部(0)</div>
+                <ol id="sort-ol">
+                </ol>
             </div>
         </div>
     </div>

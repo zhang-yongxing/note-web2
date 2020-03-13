@@ -150,7 +150,6 @@
             note_title = $('#exampleInputName2').val();
             note = $('#summernote').summernote("code");
             note_des = $('#summernote').text();
-            alert(note_des);
             sort_id = $("#dropdownMenu1").attr("value");
             req_status = true;
             if (sort_id.length!=32){
@@ -180,7 +179,7 @@
                         data:JSON.stringify({
                             'note_name': note_title,
                             'note_content': note,
-                            // 'note_des': note_des
+                            'note_des': note_des.substring(0,50),
                         }),
                         withCredentials: true,
                         crossDomain: true,
@@ -205,6 +204,7 @@
                         data:JSON.stringify({
                             'note_name': note_title,
                             'note_content': note,
+                            'note_des': note_des.substring(0,50),
                         }),
                         withCredentials: true,
                         crossDomain: true,
