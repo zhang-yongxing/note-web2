@@ -2,9 +2,252 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>edit</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.16/dist/summernote.min.js"></script>
+    <style>
+        .top-title{
+            margin-top: 10px;
+            margin-bottom: 10px;
+            margin-left: 100px;
+        }
+        .bor{
+            border: 1px red solid;
+        }
+        #error{
+            display: none;
+            width: 100%;
+            height: 40px;
+            background-color: #f2dede;
+            color: #a94442;
+            border-radius: 5px;
+            border-color:#ebccd1;
+            margin-bottom: 5px;
+        }
+        #error-info{
+            float: left;
+            margin-top: 10px;
+            margin-left: 15px;
+            font-size: 13px;
+        }
+        #error-X{
+            float: right;
+            margin-top: 13px;
+            margin-right: 15px;
+
+        }
+        #error-X:hover{
+            cursor:pointer;
+        }
+    </style>
 </head>
 <body>
+<div class="container top-title">
+    <div class="row ">
+        <form class="col-sm-9 form-inline  ">
+            <div class="form-group" style="width: 100%">
+                <label for="exampleInputName2">标题名称:</label>
+                <input type="text" style="width: 90%;margin-left: 15px" class=" form-control " id="exampleInputName2" placeholder="">
+            </div>
+        </form>
+        <div class="col-sm-2">
+            <div class="dropdown" id="sort-select">
+                <button type="button" style="width: 97%" class="btn btn-primary dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown" value="">分类
+                    <span class="caret"></span>
+                </button>
+                <ul id="sort-ul" class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                    <li role="presentation" >
+                        <a role="menuitem"  href="#">空</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-sm-1 ">
+            <button type="button" class="btn btn-danger" id="save-btn" data-toggle="popover" data-content="错误">
+                保存
+            </button>
+        </div>
+    </div>
+</div>
+<div id="error">
+    <span id="error-info" >错误</span>
+    <span id="error-X" class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+</div>
+<div id="summernote"><p>Hello Summernote</p></div>
+<script>
+    editStatus = 'add';
+    note_id = '';
+    sort_id = '';
+    var url = location.search; //获取url中"?"符后的字串
+    //判断是修改还是创建
+    if (url.indexOf("?") != -1) {    //判断是否有参数
+        var str = url.substr(1);
+        strs = str.split("&");
+        note_id = strs[0].split('=')[1];
+        sort_id = strs[1].split('=')[1];
+        $.ajax({
+            url: "http://www.note.com/api/notes/" + note_id,      //请求接口的地址
+            type: "GET",
+            contentType:"application/json",
+            withCredentials: true,
+            crossDomain: true,
+            success: function (response, status, xhr) {                      //请求成功后的操作
+                if (xhr.status == 200)
+                    Note = JSON.parse(xhr.responseText);
+                    editStatus = 'alter';
+                    $('#exampleInputName2').attr('value',Note.note_name);
+                    $('#summernote').summernote('code', Note.note_content);
 
+            },
+            error: function (res) {                       //请求失败后的操作
+                alert("获取数据失败");
+            }
+        });
+        $.ajax({
+            url: "http://www.note.com/api/sorts/" + sort_id,      //请求接口的地址
+            type: "GET",
+            contentType:"application/json",
+            withCredentials: true,
+            crossDomain: true,
+            success: function (response, status, xhr) {                      //请求成功后的操作
+                if (xhr.status == 200)
+                    Sort = JSON.parse(xhr.responseText);
+                    $("#dropdownMenu1").text(Sort.sort_name);
+                    $("#dropdownMenu1").attr("value",sort_id);
+            },
+            error: function (res) {                       //请求失败后的操作
+                alert("获取数据失败");
+            }
+        });
+    }
+    // 富文本
+    $(document).ready(function() {
+        $('#summernote').summernote({
+            height: 600,                 // set editor height
+            minHeight: 600,             // set minimum height of editor
+            maxHeight: 600,             // set maximum height of editor
+            focus: true                  // set focus to editable area after initializing summernote
+        });
+    });
+    $(document).ready(function() {
+        // 选择分类
+        $('#sort-select').on('hide.bs.dropdown', function () {
+            $("#sort-ul").children().click(function () {
+                var sort_name = $(this).text();
+                var id = $(this).attr("value");
+                $("#dropdownMenu1").text(sort_name);
+                $("#dropdownMenu1").attr("value",id);
+            });
+        });
+        $('#error-X').click(function () {
+            $('#error').hide();
+        });
+        // 保存
+        $('#save-btn').click(function () {
+            note_title = $('#exampleInputName2').val();
+            note = $('#summernote').summernote("code");
+            note_des = $('#summernote').text();
+            alert(note_des);
+            sort_id = $("#dropdownMenu1").attr("value");
+            req_status = true;
+            if (sort_id.length!=32){
+                $('#error-info').text('分类没有创建');
+                $('#error').show();
+                req_status = false;
+            }
+            if (note.length == 0){
+                $('#error-info').text('内容不能为空');
+                $('#error').show();
+                req_status = false;
+            }
+            if (note_title.length == 0){
+                $('#error-info').text('标题不能为空');
+                $('#error').show();
+                req_status = false;
+            }else if(note_title.length > 50){
+                $('#error-info').text('标题长度不能超过50');
+                $('#error').show();
+                req_status = false;
+            }
+            if (req_status == true){
+                if(editStatus == 'alter'){
+                    $.ajax({
+                        url: "http://www.note.com/api/sorts/"+ sort_id +"/notes/"+ note_id,      //请求接口的地址
+                        type: "PUT",                                   //请求的方法GET/POST
+                        data:JSON.stringify({
+                            'note_name': note_title,
+                            'note_content': note,
+                            // 'note_des': note_des
+                        }),
+                        withCredentials: true,
+                        crossDomain: true,
+                        contentType:"application/json",
+                        success: function (response,status,xhr) {                      //请求成功后的操作
+                            if (xhr.status == 204){
+                                window.location.href="http://www.note.com/homepage.html";
+                            }
+                        },
+                        error: function (res) {                       //请求失败后的操作
+                            if (res.status == 422){
+                                var obj = JSON.parse(res.responseText);
+                            }else if(res.status == 500){
+                                alert("服务器内部错误")
+                            }
+                        }
+                    })
+                }else{
+                    $.ajax({
+                        url: "http://www.note.com/api/sorts/"+ sort_id +"/notes",      //请求接口的地址
+                        type: "POST",                                   //请求的方法GET/POST
+                        data:JSON.stringify({
+                            'note_name': note_title,
+                            'note_content': note,
+                        }),
+                        withCredentials: true,
+                        crossDomain: true,
+                        contentType:"application/json",
+                        success: function (response,status,xhr) {                      //请求成功后的操作
+                            if (xhr.status == 201){
+                                var obj = JSON.parse(xhr.responseText);
+                                window.location.href="http://www.note.com/homepage.html?note_id="+obj.note_id;
+                            }
+                        },
+                        error: function (res) {                       //请求失败后的操作
+                            console.log(res.status);
+                            if (res.status == 422){
+                                var obj = JSON.parse(res.responseText);
+                            }else if(res.status == 500){
+                                alert("服务器内部错误")
+                            }
+                        }
+                    })
+                }
+
+            }
+
+        });
+    });
+    // 获取分类列表
+    $.ajax({
+        url: "http://www.note.com/api/sorts",      //请求接口的地址
+        type: "GET",
+        withCredentials: true,
+        crossDomain: true,
+        success: function (response, status, xhr) {                      //请求成功后的操作
+            if (xhr.status == 200) {
+                SortList = JSON.parse(xhr.responseText);
+                console.log(SortList);
+                var html = "";
+                for(var i=0;i<SortList.length;i++){
+                    html += "<li role='presentation' id='sort-li' value="+ SortList[i].sort_id +"><a role='menuitem' href='#'>"+ SortList[i].sort_name +"</a></li>"
+                }
+                $("#sort-ul").html(html)
+            }
+        },
+    });
+</script>
 </body>
 </html>

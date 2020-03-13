@@ -32,11 +32,21 @@
             border: 1px red solid;
             /*text-align: center;*/
         }
-        .blank{
+        #blank{
             font-size: 50px;
             color: #777;
             text-align: center;
             margin-top: 180px;
+            display: block;
+        }
+        #note-note{
+            display: none;
+        }
+        #note-title{
+            text-align: center;
+        }
+        #note-content{
+            margin-top: 30px;
         }
         .sort-button{
             width:80px;
@@ -66,11 +76,30 @@
             box-shadow: 2px 2px 2px #eeeeee;
         }
         #sort-ol{
+            margin-left: -20px;
             margin-top: 5px;
             list-style: none;
         }
+        .sort-title-ol{
+            margin-left: -25px;
+            list-style: none;
+            display: none;
+        }
+        .sort-title-li{
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        .sort-title-li:hover{
+            color: #563d7c;
+            cursor:pointer;
+        }
         .sort-li{
-            margin-top: 3px;
+            font-size: 13px;
+            margin-top: 7px;
+        }
+        .sort-li:hover{
+            color: #563d7c;
+            cursor:pointer;
         }
         #X:hover{
             cursor:pointer;
@@ -102,12 +131,25 @@
             </div>
             <div class="col-sm-9 ">
                 <div class="row ">
-                    <button id="edit" type="button" class="btn btn-default" style="float: right">
+                    <button id="edit" type="button" class="btn btn-default" style="float: right ;margin-left: 10px;">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                     </button>
+                    <button id="edit-alter" type="button" class="btn btn-default" style="float: right;display: none" value="">
+                        <span class="glyphicon glyphicon-pencil" aria-hidden="true"></span>
+                    </button>
                 </div>
-                <div class="row blank">
-                    空
+                <div id="note" class="row ">
+                    <div id="blank">
+                        空
+                    </div>
+                    <div id="note-note">
+                        <div id="note-title" class="">
+                            <h3></h3>
+                        </div>
+                        <div id="note-content" class="">
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -129,6 +171,8 @@
     <button id="add-sort-ajax" style="margin-top: 30px;margin-left: 125px;width: 150px;height: 30px" type="button" class="btn btn-default">添加</button>
 </div>
 <script>
+    select_sort_id = "";
+    select_note_id = "";
     $(document).ready(function(){
         $("#add-sort").click(function(){
             $("#add-sort-page").toggle();
@@ -167,28 +211,125 @@
             $("#add-sort-page").toggle();
         });
         $("#edit").click(function(){
-            window.open("http://www.note.com/homepage.html")
+            window.open("http://www.note.com/edit.html");
+        });
+        $('#edit-alter').click(function () {
+            window.open("http://www.note.com/edit.html?note_id="
+                +select_note_id+"&sort_id="+select_sort_id
+            );
+        });
+        $(".sort-li").click(function () {
+            $(this).css('font-weight',700);
+            $(this).siblings('.sort-li').css('font-weight',300);
+            $(this).siblings('.sort-title-ol').hide();
+            $(this).next().show();
+        });
+        $(".sort-title-li").click(function () {
+            note_id = $(this).attr('value');
+            $(this).css('font-weight',700);
+            $('.sort-title-li').not(this).css('font-weight',300);
+            $.ajax({
+                url: "http://www.note.com/api/notes/" + note_id,      //请求接口的地址
+                type: "GET",
+                contentType:"application/json",
+                withCredentials: true,
+                crossDomain: true,
+                success: function (response, status, xhr) {                      //请求成功后的操作
+                    if (xhr.status == 200)
+                        Note = JSON.parse(xhr.responseText);
+                        select_sort_id = Note.sort_id;
+                        select_note_id = Note.note_id;
+                        $('#blank').hide();
+                        $('#note-note').show();
+                        $('#note-title').children('h3').text(Note.note_name);
+                        $('#note-content').html(Note.note_content);
+                        $('#edit-alter').show();
+                        // $('#edit-alter').attr('value',Note.note_id);
+                    },
+                error: function (res) {                       //请求失败后的操作
+                    alert("获取数据失败");
+                }
+            });
+
+        });
+        $(".sort-li").hover(function(){
+            $(this).css("color","#563d7c");
+        },function(){
+            $(this).css("color","#777");
+        });
+        $(".sort-title-li").hover(function(){
+            $(this).css("color","#563d7c");
+        },function(){
+            $(this).css("color","#777");
         });
     });
+    var SortList = [];
+    var NoteList = [];
     // 获取分类列表
     $.ajax({
         url: "http://www.note.com/api/sorts",      //请求接口的地址
         type: "GET",
         withCredentials: true,
         crossDomain: true,
+        async: false,
         success: function (response, status, xhr) {                      //请求成功后的操作
             if (xhr.status == 200) {
                 SortList = JSON.parse(xhr.responseText);
-                console.log(SortList);
-                var html = "";
-                for(var i=0;i<SortList.length;i++){
-                    html += "<li class='sort-li'>"+ SortList[i].sort_name +"</li>"
-                }
-                $("#sort-ol").html(html)
+                // var html = "";
+                // for(var i=0;i<SortList.length;i++){
+                //     html += "<li class='sort-li'>"+ SortList[i].sort_name +"</li>"
+                // }
+                // $("#sort-ol").html(html)
             }
         },
     });
+    // 获取笔记列表
+    $.ajax({
+        url: "http://www.note.com/api/notes",      //请求接口的地址
+        type: "GET",
+        withCredentials: true,
+        crossDomain: true,
+        async: false,
+        success: function (response, status, xhr) {                      //请求成功后的操作
+            if (xhr.status == 200) {
+                NoteList = JSON.parse(xhr.responseText);
+                // console.log(NoteList)
+            }
+        },
+        error: function (xhr) {                       //请求失败后的操作
+            if (xhr.status == 200) {
+                NoteList = JSON.parse(xhr.responseText);
+                // console.log(NoteList)
+            }
+        }
+    });
+    var sList = [];
+    for(var i = 0; i < SortList.length; i++ ){
+        var sort = {
+            sort_id:SortList[i].sort_id,
+            sort_name:SortList[i].sort_name,
+            notes:[],
+        };
 
+        for(var j = 0; j < NoteList.length; j++ ){
+            if(SortList[i].sort_id == NoteList[j].sort_id){
+                sort.notes.push(NoteList[j])
+            }
+        }
+        sList.push(sort);
+    }
+    var html = "";
+    for(var s=0; s<sList.length;s++){
+        html += "<li class='sort-li'>"+ sList[s].sort_name+ "(" + String(sList[s].notes.length) +")</li>";
+        if (sList[s].notes.length != 0){
+            html += "<ol class='sort-title-ol'>";
+            for(var n=0; n < sList[s].notes.length; n++){
+                html += "<li class='sort-title-li' value='"+ sList[s].notes[n].note_id +" '>"+ sList[s].notes[n].note_name +"</li>"
+            }
+            html += "</ol>";
+        }
+    }
+    $("#sort-ol").html(html)
 </script>
 </body>
 </html>
