@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        .register{
+            margin-top: 50px;
+        }
+        .register-icon{
+            font-weight: 700;
+            font-size: 80px;
+            font-family: monospace;
+            text-align: center;
+        }
+        /*.register-title{*/
+        /*    font-weight: 400;*/
+        /*    font-size: 20px;*/
+        /*    font-family: monospace;*/
+        /*    text-align: center;*/
+        /*    margin-top: 20px;*/
+        /*}*/
+        .register-username{
+            width: 100%;
+            height: 35px;
+            margin-top: 40px;
+        }
+        .register-username-text{
+            width: 68%;
+            border: 2px solid black;
+            border-top-style: none;
+            border-left-style: none;
+            border-right-style: none;
+        }
+        .register-button{
+            width: 68%;
+            border: 2px solid black;
+            height: 30px;
+            background-color: white;
+            color: black;
+            margin-top: 10px;
+        }
+
+    </style>
+    <script>
+        // 注册按钮点击
+        $(document).ready(function(){
+            $("button").click(function(){
+                var username = $('#username').val();
+                var nickname = $('#nickname').val();
+                var pw = $("#pw").val();
+                var v_pw = $("#verify-pw").val();
+                var email = $("#email").val();
+
+                req_status = true;
+                if (username == ""){
+                    $("#username").css("border-color", "red");
+                    $("#username").siblings("div").text("用户名：不能为空");
+                    $("#username").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (username.length > 20){
+                    $("#username").css("border-color", "red");
+                    $("#username").siblings("div").text("用户名：长度超过20");
+                    $("#username").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (nickname == ""){
+                    $("#nickname").css("border-color", "red");
+                    $("#nickname").siblings("div").text("昵称：不能为空");
+                    $("#nickname").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (nickname.length > 20){
+                    $("#nickname").css("border-color", "red");
+                    $("#nickname").siblings("div").text("昵称：长度超过20");
+                    $("#nickname").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (pw == ""){
+                    $("#pw").css("border-color", "red");
+                    $("#pw").siblings("div").text("密码：不能为空");
+                    $("#pw").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (v_pw != pw){
+                    $("#verify-pw").css("border-color", "red");
+                    $("#verify-pw").siblings("div").text("确认密码：两次密码不一致");
+                    $("#verify-pw").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (email == ""){
+                    $("#email").css("border-color", "red");
+                    $("#email").siblings("div").text("邮箱：不能为空");
+                    $("#email").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (email.length > 50){
+                    $("#email").css("border-color", "red");
+                    $("#email").siblings("div").text("邮箱：长度超过50");
+                    $("#email").siblings("div").css("color", "red");
+                    req_status = false;
+                }
+                if (req_status == true){
+                    $.ajax({
+                        url: "/users",      //请求接口的地址
+                        type: "POST",                                   //请求的方法GET/POST
+                        // data: {                                        //需要传递的参数
+                        //     user_name: 'xiaomingtest',
+                        //     password: '123456',
+                        //     nick_name: 'xiaomingtest',
+                        //     email: '921333@qq.com'
+                        // },
+                        data:JSON.stringify({
+                            'user_name': username,
+                            'password':pw,
+                            'nick_name':nickname,
+                            'email':email
+                        }),
+                        contentType:"application/json",
+                        success: function (response,status,xhr) {                      //请求成功后的操作
+                            if (xhr.status == 201){
+                                console.log(xhr.status);
+                                console.log(xhr);
+                                window.location.href ="/home.html";
+                            }
+                        },
+                        error: function (res) {                       //请求失败后的操作
+                            if (res.status == 422){
+                                var obj = JSON.parse(res.responseText);
+                                if (obj.error == "already exists" && obj.field == "user_name"){
+                                    $("#username").css("border-color", "red");
+                                    $("#username").siblings("div").text("用户名：已经存在");
+                                    $("#username").siblings("div").css("color", "red");
+                                }else if (obj.error == "already exists" && obj.field == "nick_name"){
+                                    $("#nickname").css("border-color", "red");
+                                    $("#nickname").siblings("div").text("昵称：已经存在");
+                                    $("#nickname").siblings("div").css("color", "red");
+                                }
+                            }else if(res.status == 500){
+                                alert("服务器内部错误")
+                            }
+                        }
+                    })
+                }
+
+            });
+        });
+        // 昵称失去焦点
+        $(document).ready(function(){
+            $("#nickname").blur(function(){
+                $("#nickname").css("border-color", "black");
+                $("#nickname").siblings("div").text("昵称：");
+                $("#nickname").siblings("div").css("color", "black");
+
+
+            });
+        });
+        // 用户名失去焦点
+        $(document).ready(function(){
+            $("#username").blur(function(){
+                $("#username").css("border-color", "black");
+                $("#username").siblings("div").text("用户名：");
+                $("#username").siblings("div").css("color", "black");
+            });
+        });
+        // 密码失去焦点
+        $(document).ready(function(){
+            $("#pw").blur(function(){
+                $("#verify-pw").css("border-color", "black");
+                $("#verify-pw").siblings("div").text("确认密码：");
+                $("#verify-pw").siblings("div").css("color", "black");
+            });
+        });
+        // 确认密码失去焦点
+        // $(document).ready(function(){
+        //     $("#verify-pw").blur(function(){
+        //         $("#verify-pw").css("border-color", "red");
+        //         $("#verify-pw").siblings("div").text("确认密码：两次密码不一致");
+        //         $("#verify-pw").siblings("div").css("color", "red");
+        //
+        //     });
+        // });
+        // 邮箱失去焦点
+        $(document).ready(function(){
+            $("#email").blur(function(){
+
+                $("#email").css("border-color", "black");
+                $("#email").siblings("div").text("密码：");
+                $("#email").siblings("div").css("color", "black");
+
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-6 col-lg-offset-3 register">
+                <div class="row">
+                    <div class="register-icon">
+                        Note
+                    </div></div>
+
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 register-username">
+                        <div>用户名：</div>
+                        <input type="text" id="username" name="username" class="register-username-text" >
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 register-username">
+                        <div >昵称：</div>
+                        <input type="text" id="nickname" name="nickname" class="register-username-text">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 register-username">
+                        <div>密码：</div>
+                        <input type="password" id="pw" class="register-username-text" >
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 register-username">
+                        <div>确认密码：</div>
+                        <input type="password" id="verify-pw" class="register-username-text" >
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 register-username">
+                        <div>邮箱：</div>
+                        <input type="password" id="email" class="register-username-text" >
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-8 col-lg-offset-2 register-username">
+                        <button class="register-button">注册</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
