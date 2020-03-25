@@ -7,6 +7,7 @@
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script type="text/javascript" src="js/jquery.cookie.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="application/javascript" src="js/setting.js"></script>
     <style>
         .login{
             margin-top: 50px;
@@ -76,7 +77,7 @@
                 }
                 if (req_status == true) {
                     $.ajax({
-                        url: "http://www.note.com/api/login",      //请求接口的地址
+                        url: DomainName + "/api/login",      //请求接口的地址
                         type: "POST",                                   //请求的方法GET/POST
                         data: JSON.stringify({
                             'user_name': username,
@@ -87,7 +88,7 @@
                         xhrFields: {withCredentials: true},
                         success: function (response, status, xhr) {                      //请求成功后的操作
                             if (xhr.status == 204) {
-                                window.location.href = "http://www.note.com/home.html?login=true";
+                                window.location.href = DomainName + "/home.html?login=true";
                             }
                         },
                         error: function (res) {                       //请求失败后的操作

@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="application/javascript" src="js/setting.js"></script>
     <script>
         loginStatus = false;
         var url = location.search; //获取url中"?"符后的字串
@@ -15,7 +16,7 @@
             strs = str.split("=");
             if (strs[0] == "login" && strs[1] == "true"){
                 $.ajax({
-                    url: "http://www.note.com/api/user",      //请求接口的地址
+                    url: DomainName + "/api/user",      //请求接口的地址
                     type: "GET",
                     withCredentials: true,
                     crossDomain: true,
@@ -37,10 +38,10 @@
         //获取首页笔记列表方法
         function GetNotes(user_id, page_num, page_size, sort_id=''){
             if (sort_id==''){
-                url = 'http://www.note.com/api/default/notes?user_id='+user_id+
+                url = DomainName + '/api/default/notes?user_id='+user_id+
                     '&page_num='+page_num+'&page_size='+ page_size;
             }else{
-                url = 'http://www.note.com/api/default/notes?user_id='+user_id+
+                url = DomainName + '/api/default/notes?user_id='+user_id+
                     '&page_num='+page_num+'&page_size='+ page_size+'&sort_id='+sort_id;
             }
 
@@ -92,7 +93,7 @@
         }
 
         function GetSorts(user_id) {
-            url = 'http://www.note.com/api/default/sorts?user_id='+user_id;
+            url = DomainName + '/api/default/sorts?user_id='+user_id;
             $.ajax({
                 url: url,      //请求接口的地址
                 type: "GET",
@@ -141,7 +142,7 @@
             });
             $("#one").click(function(){
                 // window.location.href ="http://www.note.com/login.html";
-                window.open("http://www.note.com/homepage.html");
+                window.open(DomainName + "/homepage.html");
             });
             //登录
             $("#two").hover(function(){
@@ -151,7 +152,7 @@
                 $("#two").css("color","#777");
             });
             $("#two").click(function(){
-                window.location.href ="http://www.note.com/login.html";
+                window.location.href = DomainName + "/login.html";
             });
             // 退出
             $("#three").hover(function(){
@@ -162,16 +163,16 @@
             });
             $("#three").click(function(){
                 $.ajax({
-                    url: "http://www.note.com/api/logout",      //请求接口的地址
+                    url: DomainName + "/api/logout",      //请求接口的地址
                     type: "POST",
                     withCredentials: true,
                     crossDomain: true,
                     success: function (response, status, xhr) {                      //请求成功后的操作
                         if (xhr.status == 204) {
-                            window.location.href ="http://www.note.com/home.html";
+                            window.location.href = DomainName + "/home.html";
                         }},
                     error: function () {                       //请求失败后的操作
-                        window.location.href ="http://www.note.com/home.html";
+                        window.location.href = DomainName + "/home.html";
                     }
                 })
             });
@@ -181,7 +182,7 @@
                 GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', num, 10);
             });
             $("#note-ol").on('click', '.note-title', function () {
-                window.open("http://www.note.com/note.html?note_id="+$(this).attr('data-note-id'));
+                window.open(DomainName + "/note.html?note_id="+$(this).attr('data-note-id'));
             });
 
             $("#sort-ol").on('click', '.sort-li',function () {

@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="application/javascript" src="js/setting.js"></script>
     <script>
         var url = location.search; //获取url中"?"符后的字串
         //判断是否登录
@@ -15,7 +16,7 @@
             if (strs[0] == "note_id"){
                 note_id = strs[1];
                 $.ajax({
-                    url: "http://www.note.com/api/notes/" + note_id,      //请求接口的地址
+                    url: DomainName + "/api/notes/" + note_id,      //请求接口的地址
                     type: "GET",
                     contentType:"application/json",
                     withCredentials: true,

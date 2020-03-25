@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
     <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script type="application/javascript" src="js/setting.js"></script>
     <style>
         .top-header{
             margin-left: 200px;
@@ -188,7 +189,7 @@
                 $("#sort_name_error").css("color","red");
             }
             $.ajax({
-                url: "http://www.note.com/api/sorts",      //请求接口的地址
+                url: DomainName + "/api/sorts",      //请求接口的地址
                 type: "POST",
                 data:JSON.stringify({
                     'sort_name': sort_name
@@ -198,12 +199,12 @@
                 crossDomain: true,
                 success: function (response, status, xhr) {                      //请求成功后的操作
                     if (xhr.status == 201) {
-                        window.location.href="http://www.note.com/homepage.html";
+                        window.location.href= DomainName + "/homepage.html";
                     }
                 },
                 error: function (res) {                       //请求失败后的操作
                     alert("失败");
-                    window.location.href="http://www.note.com/homepage.html";
+                    window.location.href= DomainName + "/homepage.html";
                 }
             });
         });
@@ -211,10 +212,10 @@
             $("#add-sort-page").toggle();
         });
         $("#edit").click(function(){
-            window.open("http://www.note.com/edit.html");
+            window.open(DomainName + "/edit.html");
         });
         $('#edit-alter').click(function () {
-            window.open("http://www.note.com/edit.html?note_id="
+            window.open(DomainName + "/edit.html?note_id="
                 +select_note_id+"&sort_id="+select_sort_id
             );
         });
@@ -229,7 +230,7 @@
             $(this).css('font-weight',700);
             $('.sort-title-li').not(this).css('font-weight',300);
             $.ajax({
-                url: "http://www.note.com/api/notes/" + note_id,      //请求接口的地址
+                url: DomainName + "/api/notes/" + note_id,      //请求接口的地址
                 type: "GET",
                 contentType:"application/json",
                 withCredentials: true,
@@ -267,7 +268,7 @@
     var NoteList = [];
     // 获取分类列表
     $.ajax({
-        url: "http://www.note.com/api/sorts",      //请求接口的地址
+        url: DomainName + "/api/sorts",      //请求接口的地址
         type: "GET",
         withCredentials: true,
         crossDomain: true,
@@ -285,7 +286,7 @@
     });
     // 获取笔记列表
     $.ajax({
-        url: "http://www.note.com/api/notes",      //请求接口的地址
+        url: DomainName + "/api/notes",      //请求接口的地址
         type: "GET",
         withCredentials: true,
         crossDomain: true,
