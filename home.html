@@ -33,8 +33,8 @@
                 });
             }
         }
-        GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', 1, 10);
-        GetSorts('9024ef397ed94d75ba3bff7b8b30b0dd');
+        GetNotes(HomeUserId, 1, 10);
+        GetSorts(HomeUserId);
         //获取首页笔记列表方法
         function GetNotes(user_id, page_num, page_size, sort_id=''){
             if (sort_id==''){
@@ -179,7 +179,7 @@
 
             $("#page").on('click', 'li', function () {
                 num = $(this).text();
-                GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', num, 10);
+                GetNotes(HomeUserId, num, 10);
             });
             $("#note-ol").on('click', '.note-title', function () {
                 window.open(DomainName + "/note.html?note_id="+$(this).attr('data-note-id'));
@@ -187,13 +187,13 @@
 
             $("#sort-ol").on('click', '.sort-li',function () {
                 li_sort_id = $(this).attr('data-sort-id');
-                GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', 1, 10, li_sort_id);
+                GetNotes(HomeUserId, 1, 10, li_sort_id);
                 $(this).css('color','#563d7c');
                 $(this).siblings().css('color','#777');
                 $('#sort-total').css('color','#777');
             });
             $('#sort-total').click(function () {
-                GetNotes('9024ef397ed94d75ba3bff7b8b30b0dd', 1, 10);
+                GetNotes(HomeUserId, 1, 10);
                 $(this).css('color','#563d7c');
                 $('.sort-li').css('color','#777');
             })
